@@ -37,14 +37,15 @@ function Service() {
       console.log('[%s] getMarketAndWait', new Date().toISOString());
       self.getMarket();
       self.socket.off('returnTicker');
-      self.socket.on('market', (market) => {
+      self.socket.once('market', (market) => {
         if (market.returnTicker) {
           self.returnTicker(market);
-          self.socket.once('returnTicker', (ticker) => {
+          // Not sure about `on`: returnTicker doesn't seem to hit this callback.
+          self.socket.on('returnTicker', (ticker) => {
             console.log('[%s] socket on called?', new Date().toISOString());
             self.returnTicker(ticker);
           });
-          // shouldn't really have to do this very often
+          // This actively requests a new market snapshot (i.e. actively polls).
           setTimeout(() => {
             getMarketAndWait();
           }, 60000);
